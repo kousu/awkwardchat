@@ -1,7 +1,7 @@
 pkgbase = mattermost
 	pkgdesc = Open source Slack-alternative in Golang and React
 	pkgver = 9.0.1
-	pkgrel = 1
+	pkgrel = 2
 	url = https://mattermost.com
 	arch = x86_64
 	license = AGPL
@@ -15,10 +15,6 @@ pkgbase = mattermost
 	makedepends = npm
 	makedepends = python
 	depends = glibc
-	optdepends = mariadb: SQL server storage
-	optdepends = mmctl: CLI admin tool
-	optdepends = percona-server: SQL server storage
-	optdepends = postgresql: SQL server storage
 	options = !lto
 	backup = etc/webapps/mattermost/config.json
 	source = https://github.com/mattermost/mattermost-server/archive/v9.0.1/mattermost-9.0.1.tar.gz
@@ -31,3 +27,9 @@ pkgbase = mattermost
 	sha256sums = 8dfeee28655b91dc75aca2317846284013ac3d5a837d360eba9641e9fbcf3aa2
 
 pkgname = mattermost
+	optdepends = mariadb: SQL server storage
+	optdepends = mmctl: CLI admin tool
+	optdepends = percona-server: SQL server storage
+	optdepends = postgresql: SQL server storage
+
+pkgname = mmctl
