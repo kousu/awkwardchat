@@ -140,7 +140,7 @@ package_mattermost() {
 	# directory SELinux security context.
 	# cf. https://github.com/mattermost/mattermost-server/blob/f8d31def8eb463fcd866ebd08f3e6ef7a24e2109/utils/subpath.go#L48
 	# cf. https://wiki.archlinux.org/index.php/Web_application_package_guidelines
-	install -dm0770 "$pkgdir/var/lib/mattermost/client"
+	install -dm0770 "$pkgdir/var/lib/mattermost/client/files"
 
 	# We want recursivity as Mattermost wants to modify files in
 	# client/files/code_themes/ as well.
