@@ -6,7 +6,7 @@
 pkgbase=mattermost
 pkgname=($pkgbase mmctl)
 pkgver=9.2.3
-pkgrel=1
+pkgrel=2
 pkgdesc="Open source Slack-alternative in Golang and React"
 arch=(x86_64)
 url="https://mattermost.com"
@@ -16,7 +16,7 @@ makedepends=(git
              go
              jq
              libpng
-             nodejs-lts-hydrogen # upstream specs 16 (gallium) but Arch's npm min is 18
+             nodejs-lts-iron # upstream specs 16 (gallium) but Arch's npm min is 18
              moreutils
              npm
              python)
