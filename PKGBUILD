@@ -20,19 +20,18 @@ makedepends=(git
              moreutils
              npm
              python)
-options=(!lto)
-_archive="$pkgname-$pkgver"
-source=("https://github.com/$pkgname/$pkgname-server/archive/v$pkgver/$_archive.tar.gz"
-        "$pkgname.service"
-        "$pkgname.sysusers"
-        "$pkgname.tmpfiles")
+_archive=$pkgname-$pkgver
+source=(https://github.com/$pkgname/$pkgname-server/archive/v$pkgver/$_archive.tar.gz
+        $pkgname.service
+        $pkgname.sysusers
+        $pkgname.tmpfiles)
 sha256sums=('84e0fdf3100bfa044e3bbf79ff7c8204ceceb236e9e477e33ae2f5b105065854'
             '9e73dc5e9ab9a95049352bd504fb4e0d6becbd5c715026d8c1df4f515d258b68'
             'f7bd36f6d7874f1345d205c6dcb79af1804362fc977a658db88951a172d1dfa0'
             '8dfeee28655b91dc75aca2317846284013ac3d5a837d360eba9641e9fbcf3aa2')
 
 prepare() {
-    cd "$_archive/server"
+    cd $_archive/server
     go mod vendor
 
     # The configuration isn’t available at this time yet, modify the default.
@@ -59,7 +58,7 @@ prepare() {
 }
 
 build() {
-    cd "$_archive/server"
+    cd $_archive/server
     export CGO_CPPFLAGS="$CPPFLAGS"
     export CGO_CFLAGS="$CFLAGS"
     export CGO_CXXFLAGS="$CXXFLAGS"
@@ -84,7 +83,7 @@ build() {
 }
 
 package_mattermost() {
-    backup=("etc/webapps/$pkgname/config.json")
+    backup=(etc/webapps/$pkgname/config.json)
     optdepends=('mariadb: SQL server storage'
                 'mmctl: CLI admin tool'
                 'percona-server: SQL server storage'
@@ -95,7 +94,7 @@ package_mattermost() {
     install -Dm644 $pkgname.sysusers "$pkgdir/usr/lib/sysusers.d/$pkgname.conf"
     install -Dm644 $pkgname.tmpfiles "$pkgdir/usr/lib/tmpfiles.d/$pkgname.conf"
 
-    cd "$_archive"
+    cd $_archive
 
     install -dm0755 "$pkgdir/usr/share/webapps"
     cp -a server/dist/$pkgname "$pkgdir/usr/share/webapps/"
@@ -111,7 +110,7 @@ package_mattermost() {
 
     # Move logs to right location
     rm -rf logs
-    ln -s "/var/log/$pkgname" logs
+    ln -s /var/log/$pkgname logs
 
     # Readme and docs
     install -dm755 "$pkgdir/usr/share/doc/$pkgname"
@@ -154,7 +153,7 @@ package_mattermost() {
 }
 
 package_mmctl() {
-    cd "$_archive"
+    cd $_archive
     install -Dm0755 -t "$pkgdir/usr/bin/" "server/bin/$pkgname"
     install -Dm0644 -t "$pkgdir/usr/share/licenses/$pkgname/" LICENSE.txt
 }
