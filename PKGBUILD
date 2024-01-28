@@ -16,7 +16,7 @@ makedepends=(git
              go
              jq
              libpng
-             nodejs-lts-iron # upstream specs 16 (gallium) but Arch's npm min is 18
+             nodejs-lts-iron # upstream specs 18 (hydrogene) but Arch’s is trying to get rid of it
              moreutils
              npm
              python)
