@@ -85,76 +85,76 @@ build() {
 }
 
 package_mattermost() {
-	optdepends=('mariadb: SQL server storage'
-	            'mmctl: CLI admin tool'
-	            'percona-server: SQL server storage'
-	            'postgresql: SQL server storage')
+    optdepends=('mariadb: SQL server storage'
+                'mmctl: CLI admin tool'
+                'percona-server: SQL server storage'
+                'postgresql: SQL server storage')
 
-	# systemd files
-	install -Dm644 $pkgname.service -t "$pkgdir/usr/lib/systemd/system/"
-	install -Dm644 $pkgname.sysusers "$pkgdir/usr/lib/sysusers.d/$pkgname.conf"
-	install -Dm644 $pkgname.tmpfiles "$pkgdir/usr/lib/tmpfiles.d/$pkgname.conf"
+    # systemd files
+    install -Dm644 $pkgname.service -t "$pkgdir/usr/lib/systemd/system/"
+    install -Dm644 $pkgname.sysusers "$pkgdir/usr/lib/sysusers.d/$pkgname.conf"
+    install -Dm644 $pkgname.tmpfiles "$pkgdir/usr/lib/tmpfiles.d/$pkgname.conf"
 
-	cd "$_archive"
+    cd "$_archive"
 
-	install -dm0755 "$pkgdir/usr/share/webapps"
-	cp -a server/dist/$pkgname "$pkgdir/usr/share/webapps/"
+    install -dm0755 "$pkgdir/usr/share/webapps"
+    cp -a server/dist/$pkgname "$pkgdir/usr/share/webapps/"
 
-	install -Dm0755 -t "$pkgdir/usr/bin" "server/bin/$pkgname"
-	install -dm0755 "$pkgdir/usr/share/webapps/$pkgname/bin/"
-	ln -sf /usr/bin/$pkgname "$pkgdir/usr/share/webapps/$pkgname/bin/$pkgname"
+    install -Dm0755 -t "$pkgdir/usr/bin" "server/bin/$pkgname"
+    install -dm0755 "$pkgdir/usr/share/webapps/$pkgname/bin/"
+    ln -sf /usr/bin/$pkgname "$pkgdir/usr/share/webapps/$pkgname/bin/$pkgname"
 
-	install -Dm0644 -t "$pkgdir/usr/share/licenses/$pkgname/" LICENSE.txt
+    install -Dm0644 -t "$pkgdir/usr/share/licenses/$pkgname/" LICENSE.txt
 
-	# fixes
-	pushd "$pkgdir/usr/share/webapps/$pkgname"
+    # fixes
+    pushd "$pkgdir/usr/share/webapps/$pkgname"
 
-	# Move logs to right location
-	rm -rf logs
-	ln -s "/var/log/$pkgname" logs
+    # Move logs to right location
+    rm -rf logs
+    ln -s "/var/log/$pkgname" logs
 
-	# Readme and docs
-	install -dm755 "$pkgdir/usr/share/doc/$pkgname"
-	mv NOTICE.txt README.md "$pkgdir/usr/share/doc/$pkgname"
+    # Readme and docs
+    install -dm755 "$pkgdir/usr/share/doc/$pkgname"
+    mv NOTICE.txt README.md "$pkgdir/usr/share/doc/$pkgname"
 
-	# Config file management
-	cp config/default.json config/config.json
+    # Config file management
+    cp config/default.json config/config.json
 
-	# Hashtags are needed to escape the Bash escape sequence. jq will consider
-	# it as a comment and won't interpret it.
-	jq --arg mmVarLib '/var/lib/mattermost' \
-			'.FileSettings.Directory |= $mmVarLib + "/files/" | # \
-			.ComplianceSettings.Directory |= $mmVarLib + "/compliance/" | # \
-			.PluginSettings.Directory |= $mmVarLib + "/plugins/" | # \
-			.PluginSettings.ClientDirectory |= $mmVarLib + "/client/plugins/" | # \
-			.LogSettings.FileLocation |= "/var/log/mattermost/" | # \
-			.NotificationLogSettings.FileLocation |= "/var/log/mattermost/"' \
-		config/config.json > config/config-new.json
-	mv config/config-new.json config/config.json
-	install -dm0755 "$pkgdir/etc/webapps"
-	mv config "$pkgdir/etc/webapps/$pkgname"
-	ln -sf /etc/webapps/$pkgname config
+    # Hashtags are needed to escape the Bash escape sequence. jq will consider
+    # it as a comment and won't interpret it.
+    jq --arg mmVarLib '/var/lib/mattermost' \
+            '.FileSettings.Directory |= $mmVarLib + "/files/" | # \
+            .ComplianceSettings.Directory |= $mmVarLib + "/compliance/" | # \
+            .PluginSettings.Directory |= $mmVarLib + "/plugins/" | # \
+            .PluginSettings.ClientDirectory |= $mmVarLib + "/client/plugins/" | # \
+            .LogSettings.FileLocation |= "/var/log/mattermost/" | # \
+            .NotificationLogSettings.FileLocation |= "/var/log/mattermost/"' \
+        config/config.json > config/config-new.json
+    mv config/config-new.json config/config.json
+    install -dm0755 "$pkgdir/etc/webapps"
+    mv config "$pkgdir/etc/webapps/$pkgname"
+    ln -sf /etc/webapps/$pkgname config
 
-	# Avoid access denied when Mattermost tries to rewrite its asset data
-	# (root.html, manifest.json and *.css) during runtime. Reuse var tmpfile
-	# directory SELinux security context.
-	# cf. https://github.com/mattermost/mattermost-server/blob/f8d31def8eb463fcd866ebd08f3e6ef7a24e2109/utils/subpath.go#L48
-	# cf. https://wiki.archlinux.org/index.php/Web_application_package_guidelines
-	install -dm0770 "$pkgdir/var/lib/mattermost/client/files"
+    # Avoid access denied when Mattermost tries to rewrite its asset data
+    # (root.html, manifest.json and *.css) during runtime. Reuse var tmpfile
+    # directory SELinux security context.
+    # cf. https://github.com/mattermost/mattermost-server/blob/f8d31def8eb463fcd866ebd08f3e6ef7a24e2109/utils/subpath.go#L48
+    # cf. https://wiki.archlinux.org/index.php/Web_application_package_guidelines
+    install -dm0770 "$pkgdir/var/lib/mattermost/client/files"
 
-	# We want recursivity as Mattermost wants to modify files in
-	# client/files/code_themes/ as well.
-	# Not recursive: for file in root.html manifest.json *.css; do
-	find client -type f -iname 'root.html' -o -iname 'manifest.json' -o -iname '*.css' |
-		while IFS= read -r fileAndPath; do
-			install -Dm0660 "$fileAndPath" "$pkgdir/var/lib/mattermost/${fileAndPath%/*}"
-			rm "$fileAndPath"
-			ln -s "/var/lib/mattermost/$fileAndPath" "$fileAndPath"
-		done
+    # We want recursivity as Mattermost wants to modify files in
+    # client/files/code_themes/ as well.
+    # Not recursive: for file in root.html manifest.json *.css; do
+    find client -type f -iname 'root.html' -o -iname 'manifest.json' -o -iname '*.css' |
+        while IFS= read -r fileAndPath; do
+            install -Dm0660 "$fileAndPath" "$pkgdir/var/lib/mattermost/${fileAndPath%/*}"
+            rm "$fileAndPath"
+            ln -s "/var/lib/mattermost/$fileAndPath" "$fileAndPath"
+        done
 }
 
 package_mmctl() {
-	cd "$_archive"
-	install -Dm0755 -t "$pkgdir/usr/bin/" "server/bin/$pkgname"
-	install -Dm0644 -t "$pkgdir/usr/share/licenses/$pkgname/" LICENSE.txt
+    cd "$_archive"
+    install -Dm0755 -t "$pkgdir/usr/bin/" "server/bin/$pkgname"
+    install -Dm0644 -t "$pkgdir/usr/share/licenses/$pkgname/" LICENSE.txt
 }
