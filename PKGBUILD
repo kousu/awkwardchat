@@ -21,7 +21,6 @@ makedepends=(git
              npm
              python)
 options=(!lto)
-backup=("etc/webapps/$pkgname/config.json")
 _archive="$pkgname-$pkgver"
 source=("https://github.com/$pkgname/$pkgname-server/archive/v$pkgver/$_archive.tar.gz"
         "$pkgname.service"
@@ -85,6 +84,7 @@ build() {
 }
 
 package_mattermost() {
+    backup=("etc/webapps/$pkgname/config.json")
     optdepends=('mariadb: SQL server storage'
                 'mmctl: CLI admin tool'
                 'percona-server: SQL server storage'
