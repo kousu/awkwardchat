@@ -10,7 +10,7 @@ pkgrel=1
 pkgdesc="Open source Slack-alternative in Golang and React"
 arch=(x86_64)
 url="https://mattermost.com"
-license=(AGPL Apache)
+license=(AGPL-3.0-only Apache-2.0)
 depends=(glibc)
 makedepends=(git
              go
