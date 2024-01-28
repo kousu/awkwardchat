@@ -66,7 +66,7 @@ build() {
     export CGO_CXXFLAGS="$CXXFLAGS"
     export CGO_LDFLAGS="$LDFLAGS"
     export GOFLAGS="-buildmode=pie -trimpath -mod=readonly -modcacherw"
-    local _config=github.com/mattermost/mattermost-server/v6/model
+    local _config=github.com/mattermost/mattermost/server/public/model
     # https://github.com/mattermost/mattermost/issues/24582
     make setup-go-work
     go build -v \
