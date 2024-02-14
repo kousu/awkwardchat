@@ -5,8 +5,8 @@
 
 pkgbase=mattermost
 pkgname=($pkgbase mmctl)
-pkgver=9.4.2
-pkgrel=2
+pkgver=9.5.0
+pkgrel=1
 pkgdesc="Open source Slack-alternative in Golang and React"
 arch=(x86_64)
 url="https://mattermost.com"
@@ -25,13 +25,18 @@ source=(https://github.com/$pkgname/$pkgname-server/archive/v$pkgver/$_archive.t
         $pkgname.service
         $pkgname.sysusers
         $pkgname.tmpfiles)
-sha256sums=('84e0fdf3100bfa044e3bbf79ff7c8204ceceb236e9e477e33ae2f5b105065854'
+sha256sums=('b1837978a66816fa0abc1723f696f062af97bb36beff46ec4c766f185baa7be8'
             '9e73dc5e9ab9a95049352bd504fb4e0d6becbd5c715026d8c1df4f515d258b68'
             'f7bd36f6d7874f1345d205c6dcb79af1804362fc977a658db88951a172d1dfa0'
             '8dfeee28655b91dc75aca2317846284013ac3d5a837d360eba9641e9fbcf3aa2')
 
 prepare() {
     cd $_archive/server
+
+    # For v9.5.0 the Go file has unsynced changes, remove when a release comes out that
+    # has a lock file in sync...
+    go mod tidy
+
     go mod vendor
 
     # The configuration isn’t available at this time yet, modify the default.
