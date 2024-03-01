@@ -5,7 +5,7 @@
 
 pkgbase=mattermost
 pkgname=($pkgbase mmctl)
-pkgver=9.5.1
+pkgver=9.6.0
 pkgrel=1
 pkgdesc="Open source Slack-alternative in Golang and React"
 arch=(x86_64)
@@ -25,17 +25,13 @@ source=(https://github.com/$pkgname/$pkgname-server/archive/v$pkgver/$_archive.t
         $pkgname.service
         $pkgname.sysusers
         $pkgname.tmpfiles)
-sha256sums=('fa4b6278374ca3cf95b6ec76acc152d1c0fbfd2d5ff25ca0e5011ce9b5ea8427'
+sha256sums=('7477e4526dc0991269a257be574f54986dac3a49830520925c95cc9599fc4ced'
             '9e73dc5e9ab9a95049352bd504fb4e0d6becbd5c715026d8c1df4f515d258b68'
             'f7bd36f6d7874f1345d205c6dcb79af1804362fc977a658db88951a172d1dfa0'
             '8dfeee28655b91dc75aca2317846284013ac3d5a837d360eba9641e9fbcf3aa2')
 
 prepare() {
     cd $_archive/server
-
-    # For v9.5.0 the Go file has unsynced changes, remove when a release comes out that
-    # has a lock file in sync...
-    go mod tidy -e
 
     # This will fail to download some private dependencies for enterprise-version-only features
     go mod vendor -e
