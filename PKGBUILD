@@ -1,5 +1,5 @@
 # Maintainer: Bruno Pagani <archange@archlinux.org>
-# Maintainer: Caleb Maclennan <alerque.com>
+# Maintainer: Caleb Maclennan <caleb@alerque.com>
 # Contributor: William Gathoye <william + aur at gathoye dot be>
 # Contributor: Massimiliano Torromeo <massimiliano dot torromeo at gmail dot com>
 
