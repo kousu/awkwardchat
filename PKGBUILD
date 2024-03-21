@@ -158,4 +158,7 @@ package_mmctl() {
     cd $_archive
     install -Dm0755 -t "$pkgdir/usr/bin/" "server/bin/$pkgname"
     install -Dm0644 -t "$pkgdir/usr/share/licenses/$pkgname/" LICENSE.txt
+    alias _compgen="$pkgdir/usr/bin/mmctl completion"
+    _compgen bash | install -Dm0644 /dev/stdin "$pkgdir/usr/share/bash-completion/completions/$pkgname"
+    _compgen zsh  | install -Dm0644 /dev/stdin "$pkgdir/usr/share/zsh/site-functions/_$pkgname"
 }
