@@ -5,27 +5,27 @@
 
 pkgbase=mattermost
 pkgname=($pkgbase mmctl)
-pkgver=9.6.1
-pkgrel=3
+pkgver=9.7.0
+pkgrel=1
 pkgdesc="Open source Slack-alternative in Golang and React"
 arch=(x86_64)
 url="https://mattermost.com"
 license=(AGPL-3.0-only Apache-2.0)
 depends=(glibc)
 makedepends=(git
-             go
+             'go<2:1.22' 'go>=2:1.21' # https://github.com/mattermost/mattermost/issues/26425
              jq
              libpng
-             nodejs-lts-iron # upstream specs 18 (hydrogene) but Arch’s is trying to get rid of it
+             nodejs-lts-iron
              moreutils
              npm
              python)
-_archive=$pkgname-$pkgver
+_archive="$pkgname-$pkgver"
 source=(https://github.com/$pkgname/$pkgname-server/archive/v$pkgver/$_archive.tar.gz
         $pkgname.service
         $pkgname.sysusers
         $pkgname.tmpfiles)
-sha256sums=('71df9e2e368c32de301bd6980dced32cf3c3ab8ad38b78c320e1147e7125e582'
+sha256sums=('d52b3f5c93354218759c4ddbd68c5e7f5574cd90b9a4cac5736bead840c8be23'
             '9e73dc5e9ab9a95049352bd504fb4e0d6becbd5c715026d8c1df4f515d258b68'
             'f7bd36f6d7874f1345d205c6dcb79af1804362fc977a658db88951a172d1dfa0'
             '8dfeee28655b91dc75aca2317846284013ac3d5a837d360eba9641e9fbcf3aa2')
@@ -35,6 +35,7 @@ prepare() {
 
     # This will fail to download some private dependencies for enterprise-version-only features
     go mod vendor -e
+    go mod tidy -e
 
     # The configuration isn’t available at this time yet, modify the default.
     sed -r -i build/release.mk \
@@ -49,13 +50,13 @@ prepare() {
 
     cd ../webapp
 
-    # Arch's NPM is too new to pass build time checks
+    # Arch's NPM is too new to pass build time checks.
+    # (Upstream isn't even adhering to this in their own CI.)
     jq 'del(.engines)' package.json | sponge package.json
 
-    # Modify npm commands to always use srcdir cache + temporary workaround for OpenSSL3 support
+    # Modify npm commands to always use srcdir cache
     sed -r -i Makefile \
-        -e "/^\tnpm /s!npm!npm --cache '$srcdir/npm-cache' --no-audit --no-fund!" \
-        -e "s|--max-old-space-size=4096|--openssl-legacy-provider|"
+        -e "/^\tnpm /s!npm!npm --cache '$srcdir/npm-cache' --no-audit --no-fund!"
     make node_modules -W package.json
 }
 
