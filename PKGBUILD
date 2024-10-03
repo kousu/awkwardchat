@@ -3,6 +3,10 @@
 # Contributor: William Gathoye <william + aur at gathoye dot be>
 # Contributor: Massimiliano Torromeo <massimiliano dot torromeo at gmail dot com>
 
+# Until golang 1.23 comes out, this needs to be built with 1.21 **not** 1.22:
+#     wget https://archive.archlinux.org/packages/g/go/go-2%3A1.21.7-1-x86_64.pkg.tar.zst
+#     pkgctl build -I go-2:1.21.7-1-x86_64.pkg.tar.zst
+
 pkgbase=mattermost
 pkgname=($pkgbase mmctl)
 pkgver=10.0.0
