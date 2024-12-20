@@ -6,7 +6,7 @@
 pkgbase=mattermost
 pkgname=($pkgbase mmctl)
 pkgver=10.3.1
-pkgrel=1
+pkgrel=2
 pkgdesc="Open source Slack-alternative in Golang and React"
 arch=(x86_64)
 url="https://mattermost.com"
@@ -143,6 +143,7 @@ package_mattermost() {
     # cf. https://github.com/mattermost/mattermost-server/blob/f8d31def8eb463fcd866ebd08f3e6ef7a24e2109/utils/subpath.go#L48
     # cf. https://wiki.archlinux.org/index.php/Web_application_package_guidelines
     install -dm0770 "$pkgdir/var/lib/mattermost/client/files"
+    install -dm0770 "$pkgdir/var/lib/mattermost/client/css"
 
     # We want recursivity as Mattermost wants to modify files in
     # client/files/code_themes/ as well.
