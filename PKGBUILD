@@ -6,7 +6,7 @@
 pkgbase=mattermost
 pkgname=($pkgbase mmctl)
 pkgver=10.5.1
-pkgrel=1
+pkgrel=2
 pkgdesc="Open source Slack-alternative in Golang and React"
 arch=(x86_64)
 url="https://mattermost.com"
@@ -119,8 +119,14 @@ package_mattermost() {
     install -dm755 "$pkgdir/usr/share/doc/$pkgname"
     mv NOTICE.txt README.md "$pkgdir/usr/share/doc/$pkgname"
 
-    # Config file management
+    # Go ahead and place default config file where it will be used
     cp config/default.json config/config.json
+
+    # Upstream default config has four space indent; Mattermost at runtime is
+    # constantly reformatting to 2 space indent. This causes havoc with Arch's
+    # config backup system which thinks the default config changes every line
+    # on every upgrade. Start us out with 2 space indent to save churn.
+    sed -i -e 's/    /  /g' config/config.json
 
     # Hashtags are needed to escape the Bash escape sequence. jq will consider
     # it as a comment and won't interpret it.
