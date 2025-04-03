@@ -5,7 +5,7 @@
 
 pkgbase=mattermost
 pkgname=($pkgbase mmctl)
-pkgver=10.6.1
+pkgver=10.7.0
 pkgrel=1
 pkgdesc="Open source Slack-alternative in Golang and React"
 arch=(x86_64)
@@ -25,7 +25,7 @@ source=(https://github.com/$pkgname/$pkgname-server/archive/v$pkgver/$_archive.t
         $pkgname.service
         $pkgname.sysusers
         $pkgname.tmpfiles)
-sha256sums=('78fc4e398cb63d11141d2915d12fbd900755eeada7ba5f239d13c2cf053a38b8'
+sha256sums=('3e979349e116428e09731c2cf3f9d6607a146c6175ab07e39b312684620a2529'
             '9e73dc5e9ab9a95049352bd504fb4e0d6becbd5c715026d8c1df4f515d258b68'
             'f7bd36f6d7874f1345d205c6dcb79af1804362fc977a658db88951a172d1dfa0'
             '8dfeee28655b91dc75aca2317846284013ac3d5a837d360eba9641e9fbcf3aa2')
