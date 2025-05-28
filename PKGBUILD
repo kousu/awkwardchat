@@ -21,18 +21,24 @@ makedepends=(git
              npm
              python)
 _archive="$pkgname-$pkgver"
-source=(https://github.com/$pkgname/$pkgname-server/archive/v$pkgver/$_archive.tar.gz
+source=(https://github.com/$pkgname/$pkgname/archive/v$pkgver/$_archive.tar.gz
         $pkgname.service
         $pkgname.sysusers
-        $pkgname.tmpfiles)
+        $pkgname.tmpfiles
+        enterprise.patch)
 sha256sums=('b7bd6bc791478a931f7a511b6e848c24cbfcd9274edb5d130925a1df1fad136b'
             '9e73dc5e9ab9a95049352bd504fb4e0d6becbd5c715026d8c1df4f515d258b68'
             'f7bd36f6d7874f1345d205c6dcb79af1804362fc977a658db88951a172d1dfa0'
-            '8dfeee28655b91dc75aca2317846284013ac3d5a837d360eba9641e9fbcf3aa2')
+            '8dfeee28655b91dc75aca2317846284013ac3d5a837d360eba9641e9fbcf3aa2'
+            '96159496937d36613d8257700101e778ac806347936cd137f51934d47de47cb8')
 
 prepare() {
-    cd $_archive/server
+    cd $_archive
+    patch -N -p1 <../../enterprise.patch
 
+    cd server
+
+    rm -f go.work* # allow re-running `go mod vendor` (e.g. when re-testing this build)
     # This will fail to download some private dependencies for enterprise-version-only features
     go mod vendor -e
     go mod tidy -e
@@ -81,13 +87,13 @@ build() {
     local _config=github.com/mattermost/mattermost/server/public/model
     # https://github.com/mattermost/mattermost/issues/24582
     make setup-go-work
-    go build -v \
+    go build -v -tags production \
          -ldflags "-linkmode external
                    -X \"$_config.BuildNumber=$pkgver-$pkgrel\" \
                    -X \"$_config.BuildDate=$(date --utc --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +"%Y-%m-%d %H:%M:%S")\" \
                    -X \"$_config.BuildHash=$pkgver-$pkgrel Arch Linux ($CARCH)\" \
-                   -X \"$_config.BuildHashEnterprise=none\" \
-                   -X \"$_config.BuildEnterpriseReady=false\"" \
+                   -X \"$_config.BuildHashEnterprise=$pkgver-$pkgrel Arch Linux ($CARCH).EE\" \
+                   -X \"$_config.BuildEnterpriseReady=true\"" \
          -o bin/ ./...
     # Move to the client directory to avoid LDFLAGS pollution of a `make build-client` invocation
     cd ../webapp

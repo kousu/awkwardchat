@@ -1,0 +1,168 @@
+From 12fb199d850ee88a230bd3cd8a164f1bb77e0dbb Mon Sep 17 00:00:00 2001
+From: kousu <nick@kousu.ca>
+Date: Tue, 27 May 2025 21:03:47 -0400
+Subject: [PATCH] Build all features but disable telemetry.
+
+---
+ server/channels/app/platform/license.go       | 15 ++++++
+ server/channels/app/platform/license.json     | 49 +++++++++++++++++++
+ server/channels/app/server.go                 |  2 +-
+ server/channels/utils/license.go              |  1 +
+ .../platform/services/telemetry/telemetry.go  |  5 +-
+ server/public/model/version.go                |  2 +-
+ 6 files changed, 70 insertions(+), 4 deletions(-)
+ create mode 100644 server/channels/app/platform/license.json
+
+diff --git a/server/channels/app/platform/license.go b/server/channels/app/platform/license.go
+index 2b7fae0698..34c718953b 100644
+--- a/server/channels/app/platform/license.go
++++ b/server/channels/app/platform/license.go
+@@ -5,6 +5,7 @@ package platform
+ 
+ import (
+ 	"bytes"
++	_ "embed"
+ 	"encoding/json"
+ 	"fmt"
+ 	"net/http"
+@@ -46,7 +47,21 @@ func (ps *PlatformService) License() *model.License {
+ 	return ps.licenseValue.Load()
+ }
+ 
++//go:embed license.json
++var license []byte
++
+ func (ps *PlatformService) LoadLicense() {
++	// load fixed enterprise license
++	var licenseStruct model.License
++	if err := json.Unmarshal(license, &licenseStruct); err != nil {
++		ps.logger.Warn("Failed to decode license from JSON", mlog.Err(err))
++	} else {
++		// TODO: randomize license.Id and license.Customer.Id?
++		if ps.SetLicense(&licenseStruct) {
++			return
++		}
++	}
++
+ 	c := request.EmptyContext(ps.logger)
+ 
+ 	// ENV var overrides all other sources of license.
+diff --git a/server/channels/app/platform/license.json b/server/channels/app/platform/license.json
+new file mode 100644
+index 0000000000..742640b9a6
+--- /dev/null
++++ b/server/channels/app/platform/license.json
+@@ -0,0 +1,49 @@
++{
++    "id": "matt3rm0stestmatt3rm0stest",
++    "issued_at": 1000180800000,
++    "starts_at": 1000180800000,
++    "expires_at": 32557089600000,
++    "customer": {
++        "id": "matt3rm0st",
++        "name": "mattermost",
++        "email": "sales@mattermost.org",
++        "company": "mattermost"
++    },
++    "features": {
++        "users": 100000,
++        "ldap": true,
++        "ldap_groups": true,
++        "mfa": true,
++        "google_oauth": true,
++        "office365_oauth": true,
++        "openid": true,
++        "compliance": true,
++        "cluster": true,
++        "metrics": true,
++        "mhpns": true,
++        "saml": true,
++        "elastic_search": true,
++        "announcement": true,
++        "theme_management": true,
++        "email_notification_contents": true,
++        "data_retention": true,
++        "message_export": true,
++        "custom_permissions_schemes": true,
++        "custom_terms_of_service": true,
++        "guest_accounts": true,
++        "guest_accounts_permissions": true,
++        "id_loaded": true,
++        "lock_teammate_name_display": true,
++        "enterprise_plugins": true,
++        "advanced_logging": true,
++        "cloud": false,
++        "shared_channels": true,
++        "remote_cluster_service": false,
++        "outgoing_oauth_connections": true
++    },
++    "sku_name": "enterprise",
++    "sku_short_name": "enterprise",
++    "is_trial": false,
++    "is_gov_sku": false,
++    "signup_jwt": ""
++}
+diff --git a/server/channels/app/server.go b/server/channels/app/server.go
+index e676c50e40..09fb30fa09 100644
+--- a/server/channels/app/server.go
++++ b/server/channels/app/server.go
+@@ -85,7 +85,7 @@ const (
+ 	debugScheduledPostJobInterval = 2 * time.Second
+ )
+ 
+-var SentryDSN = "https://9d7c9cccf549479799f880bcf4f26323@o94110.ingest.sentry.io/5212327"
++var SentryDSN = "https://disabled.ingest.sentry.io/5212327"
+ 
+ // This is a placeholder to allow the existing release pipelines to run without failing to insert
+ // the key that's now hard-coded above. Remove this once we converge on the unified delivery
+diff --git a/server/channels/utils/license.go b/server/channels/utils/license.go
+index fdd13b92d8..cd5bb7b956 100644
+--- a/server/channels/utils/license.go
++++ b/server/channels/utils/license.go
+@@ -54,6 +54,7 @@ func (l *LicenseValidatorImpl) LicenseFromBytes(licenseBytes []byte) (*model.Lic
+ }
+ 
+ func (l *LicenseValidatorImpl) ValidateLicense(signed []byte) (string, error) {
++
+ 	decoded := make([]byte, base64.StdEncoding.DecodedLen(len(signed)))
+ 
+ 	_, err := base64.StdEncoding.Decode(decoded, signed)
+diff --git a/server/platform/services/telemetry/telemetry.go b/server/platform/services/telemetry/telemetry.go
+index a946274d6c..9ab98ae146 100644
+--- a/server/platform/services/telemetry/telemetry.go
++++ b/server/platform/services/telemetry/telemetry.go
+@@ -219,7 +219,8 @@ func (ts *TelemetryService) getRudderConfig() RudderConfig {
+ }
+ 
+ func (ts *TelemetryService) telemetryEnabled() bool {
+-	return *ts.srv.Config().LogSettings.EnableDiagnostics && ts.srv.IsLeader()
++	//return *ts.srv.Config().LogSettings.EnableDiagnostics && ts.srv.IsLeader()
++	return false
+ }
+ 
+ func (ts *TelemetryService) sendDailyTelemetry(override bool) {
+@@ -1435,7 +1436,7 @@ func (ts *TelemetryService) initRudder(endpoint string, rudderKey string) {
+ 			UserId: ts.TelemetryID,
+ 		})
+ 
+-		ts.rudderClient = client
++		//ts.rudderClient = client // DISABLED
+ 	}
+ }
+ 
+diff --git a/server/public/model/version.go b/server/public/model/version.go
+index ee9ee50752..973a70c74e 100644
+--- a/server/public/model/version.go
++++ b/server/public/model/version.go
+@@ -142,7 +142,7 @@ var BuildNumber string
+ var BuildDate string
+ var BuildHash string
+ var BuildHashEnterprise string
+-var BuildEnterpriseReady string
++var BuildEnterpriseReady string = "true"
+ var versionsWithoutHotFixes []string
+ 
+ func init() {
+-- 
+2.49.0
+
