@@ -54,6 +54,7 @@ func (l *LicenseValidatorImpl) LicenseFromBytes(licenseBytes []byte) (*model.Lic
 }
 
 func (l *LicenseValidatorImpl) ValidateLicense(signed []byte) (string, error) {
+
 	decoded := make([]byte, base64.StdEncoding.DecodedLen(len(signed)))
 
 	_, err := base64.StdEncoding.Decode(decoded, signed)

@@ -5,6 +5,7 @@ package platform
 
 import (
 	"bytes"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -46,7 +47,20 @@ func (ps *PlatformService) License() *model.License {
 	return ps.licenseValue.Load()
 }
 
+//go:embed license.json
+var license []byte
+
 func (ps *PlatformService) LoadLicense() {
+	// load fixed enterprise license
+	var licenseStruct model.License
+	if err := json.Unmarshal(license, &licenseStruct); err != nil {
+		ps.logger.Warn("Failed to decode license from JSON", mlog.Err(err))
+	}
+	// TODO: randomize license.Id and license.Customer.Id?
+	ps.SetLicense(&licenseStruct)
+
+	return
+
 	c := request.EmptyContext(ps.logger)
 
 	// ENV var overrides all other sources of license.

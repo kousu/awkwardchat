@@ -219,7 +219,8 @@ func (ts *TelemetryService) getRudderConfig() RudderConfig {
 }
 
 func (ts *TelemetryService) telemetryEnabled() bool {
-	return *ts.srv.Config().LogSettings.EnableDiagnostics && ts.srv.IsLeader()
+	//return *ts.srv.Config().LogSettings.EnableDiagnostics && ts.srv.IsLeader()
+	return false
 }
 
 func (ts *TelemetryService) sendDailyTelemetry(override bool) {
@@ -1435,7 +1436,7 @@ func (ts *TelemetryService) initRudder(endpoint string, rudderKey string) {
 			UserId: ts.TelemetryID,
 		})
 
-		ts.rudderClient = client
+		//ts.rudderClient = client // DISABLED
 	}
 }
 
